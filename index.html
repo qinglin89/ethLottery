@@ -1,0 +1,172 @@
+                                                                               <!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>老舍工作室(wudao.com)</title>
+</head>
+<body onload = "initt()">
+
+<h1>Eth-lottery</font></h1>
+<p>
+current period:&nbsp;&nbsp;<span id="period">1</span>
+</p>
+<p>
+winner in period <span id="period1">?</span>:&nbsp;&nbsp;<span id="winner">0x</span>
+</p>
+<p id="demo">
+the number of winner in period <span id="period2">?</span>:&nbsp;&nbsp;
+<span id="number">-1</span>
+</p>
+<p>
+the block of winnerTx in period <span id="period3">?</span>:&nbsp;&nbsp;
+<span id="block">0x</span>
+</p>
+<p>
+  <br/><br/>
+Buy some lotteries:<br/>
+<label for="address">FromCount:</label><input type="text", id="address"/>
+<label for="value">lotteries:</label><input type="text", id="value"/>
+<button type="button", onclick="send()",disabled="", id="send">send</button>
+</p>
+<p>
+  status:<br/>
+  <span id="status">&nbsp;&nbsp;waiting ...</span>
+</p>
+<p>
+ticket:<br/>
+<span>
+&nbsp;&nbsp;Num: <span id="ticketInfoNum"></span><br/>
+&nbsp;&nbsp;Period: <span id="ticketInfoPeriod"></span>
+</span>
+</p>
+
+<script>
+
+var web3;
+var xwinner;  // 找到元素
+var xperiod;
+var xperiod1;
+var xperiod2;
+var xperiod3;
+var xnumber;
+var xblock;
+var xstatus;
+var xticketInfoNum;
+var xticketInfoPeriod;
+var xcount;
+var xsend;
+
+var winner;
+var period;
+var period1;
+var period2;
+var period3;
+var currentPeriod;
+var ethLottery;
+var contractAddress;
+var ticketInfoNum;
+var ticketInfoPeriod;
+var count;
+
+function initt() {
+  web3 = window.web3;
+  period = 1;
+  xblock = document.getElementById("block");
+  xwinner = document.getElementById("winner");
+  xnumber = document.getElementById("number");
+  xperiod = document.getElementById("period");
+  xperiod1 = document.getElementById("period1");
+  xperiod2 = document.getElementById("period2");
+  xperiod3 = document.getElementById("period3");
+  xstatus = document.getElementById("status");
+  xticketInfoNum = document.getElementById("ticketInfoNum");
+  xticketInfoPeriod = document.getElementById("ticketInfoPeriod");
+  xcount = document.getElementById("count");
+  xsend = document.getElementById("send");
+
+  contractAddress = '0x6f6e3ea90ad340758967a6267e33a7da9751926b'
+  count = 0;
+// finneyContract = web3.eth.contract([{"constant":true,"inputs":[],"name":"getCurrentPeriod","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"sendEther","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"getBalance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"winnersResult","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCurrentNumber","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"addr","type":"address"},{"name":"amount","type":"uint256"}],"name":"getEthers","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"pd","type":"uint256"}],"name":"getPrizeResult","outputs":[{"name":"","type":"address"},{"name":"","type":"uint256"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[],"payable":true,"stateMutability":"payable","type":"constructor"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":false,"name":"_value","type":"uint256"},{"indexed":false,"name":"_period","type":"uint256"}],"name":"Messagea","type":"event"}])
+//
+ethLotteryContract = web3.eth.contract([{"constant":true,"inputs":[],"name":"getCurrentPeriod","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getBalance","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"pd","type":"uint256"}],"name":"getWinner","outputs":[{"name":"","type":"address"},{"name":"","type":"uint256"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getCurrentNumber","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"addr","type":"address"},{"name":"amount","type":"uint256"}],"name":"getEthers","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"winnerHistory","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"ethgLottery","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},{"payable":true,"stateMutability":"payable","type":"fallback"},{"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":false,"name":"_lottery","type":"uint256"},{"indexed":false,"name":"_period","type":"uint256"}],"name":"MessageLottery","type":"event"}])
+
+
+
+  //var finney = finneyContract.at('0x57a5ee3983124cb4496b26a5927eac553f2e957d')
+//finney = finneyContract.at(contractAddress)
+ethLottery = ethLotteryContract.at(contractAddress);
+
+refresh();
+}
+
+function refresh() {
+
+  ethLottery.getCurrentPeriod(function(err, re){
+    currentPeriod = re.c[0];
+    if(currentPeriod > period) {
+      ethLottery.getWinner(period, function(err, re){
+        winner = re;
+        period = currentPeriod;
+        xperiod.innerHTML = period;
+        xperiod1.innerHTML = period - 1;
+        xperiod2.innerHTML = period - 1;
+        xperiod3.innerHTML = period - 1;
+
+        xwinner.innerHTML = winner[0];
+        xnumber.innerHTML = winner[1].c[0];
+        xblock.innerHTML = winner[2].c[0];
+        setTimeout(refresh, 1000);
+      })
+
+
+    } else {
+      setTimeout(refresh, 1000);
+    }
+  });
+
+}
+
+function send(){
+  xsend.disabled = "disabled";
+  var txhash = "pending";
+  fromAddr = document.getElementById("address").value;
+  valueSend = document.getElementById("value").value;
+  web3.eth.sendTransaction({from:fromAddr, value:(web3.toWei(0.001))*valueSend, to:contractAddress}, function(err, re){
+    txhash = re;
+    var nul;
+    if(txhash == nul) {
+      //var nul;
+      xstatus.innerHTML = "tx has been rejected!"
+      xsend.disabled = "";
+    } else {
+      xstatus.innerHTML = "tx has been submmited: " + txhash +"<br/> you arent be able to buy any more tikets until these have been confirmed";
+      xticketInfoNum.innerHTML = "";
+      xticketInfoPeriod.innerHTML = "";
+
+      var event = ethLottery.MessageLottery({_from:fromAddr});
+      event.watch(function(err, result) {
+
+        if(valueSend > 1) {
+          var lotteryTo = (result.args._lottery.c[0]-1)/10;
+          var lotteryFrom = lotteryTo - valueSend + 1;
+          xticketInfoNum.innerHTML = lotteryFrom + " -- " + lotteryTo + "  (" + valueSend + ")";
+        } else {
+          xticketInfoNum.innerHTML = (result.args._lottery.c[0]-1)/10 + "  (" + valueSend + ")";
+        }
+        xticketInfoPeriod.innerHTML = result.args._period.c[0];
+        xstatus.innerHTML = txhash + "<br/>tx has been confirmed! ";
+        xsend.disabled = "";
+
+        event.stopWatching();
+      })
+    }
+  })
+
+}
+
+
+</script>
+
+
+</body>
+</html>
